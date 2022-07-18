@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 require('./services/password');
 const { mongoURI } = require('./config/keys');
+require('./models/User.js');
 
 mongoose.connect(mongoURI);
 
