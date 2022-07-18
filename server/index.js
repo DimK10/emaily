@@ -1,5 +1,9 @@
 const express = require('express');
+const mongoose = require('mongoose');
 require('./services/password');
+const { mongoURI } = require('./config/keys');
+
+mongoose.connect(mongoURI);
 
 const app = express();
 
