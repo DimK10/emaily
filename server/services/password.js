@@ -7,39 +7,36 @@ const {
 } = require('../config/keys');
 require('../models/User');
 
-module.exports = passportConfig = (app) => {
-  const User = mongoose.model('users');
+const User = mongoose.model('users');
 
-  // Passport
-  // Taken from
-  // https://stackoverflow.com/questions/22298033/nodejs-passport-error-oauthstrategy-requires-session-support
-  app.use(passport.initialize());
-  app.use(passport.session());
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
 
-  passport.serializeUser((user, done) => {
-    done(null, user.id);
-  });
+passport.deserializeUser(async (id, done) => {
+  const user = await User.findById(id);
+  done(null, user);
+});
 
-  passport.use(
-    new GoogleStrategy(
-      {
-        clientID,
-        clientSecret,
-        callbackURL: '/auth/google/callback',
-      },
-      async (accessToken, refreshToken, profile, done) => {
-        try {
-          const user = await User.findOne({ googleId: profile.id });
-          if (!user) {
-            user = await new User({ googleId: profile.id }).save();
-          }
-
-          done(null, user);
-        } catch (err) {
-          console.error(err);
-          done(err, null);
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID,
+      clientSecret,
+      callbackURL: '/auth/google/callback',
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const user = await User.findOne({ googleId: profile.id });
+        if (!user) {
+          user = await new User({ googleId: profile.id }).save();
         }
+
+        done(null, user);
+      } catch (err) {
+        console.error(err);
+        done(err, null);
       }
-    )
-  );
-};
+    }
+  )
+);

@@ -1,24 +1,24 @@
 const express = require('express');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const mongoose = require('mongoose');
-const passportConfig = require('./services/password');
-const { mongoURI } = require('./config/keys');
+require('./services/password');
+const { mongoURI, cookieKey } = require('./config/keys');
+const passport = require('passport');
 require('./models/User.js');
 
 mongoose.connect(mongoURI);
 
 const app = express();
 
-// Taken from 
-// https://stackoverflow.com/questions/22298033/nodejs-passport-error-oauthstrategy-requires-session-support
-// Authentication configuration
-app.use(session({
-  resave: false,
-  saveUninitialized: true,
-  secret: 'bla bla bla' 
-}));
+app.use(
+  cookieSession({
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    keys: [cookieKey],
+  })
+);
 
-passportConfig(app);
+app.use(passport.initialize());
+app.use(passport.session());
 
 require('./routes/authRoutes')(app);
 
